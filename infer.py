@@ -23,8 +23,8 @@ def _infer(path_to_input_image: str, path_to_output_image: str, path_to_checkpoi
                   rpn_pre_nms_top_n=Config.RPN_PRE_NMS_TOP_N, rpn_post_nms_top_n=Config.RPN_POST_NMS_TOP_N).cuda()
     model.load(path_to_checkpoint)
     CATEGORY_TO_LABEL_DICT = {
-        'background': 0,
-        'crack': 1, 'corrosion': 2
+        0: 'background',
+        1: 'crack', 2: 'corrosion'
     }
 
     with torch.no_grad():
