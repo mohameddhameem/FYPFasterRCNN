@@ -29,11 +29,11 @@ def _train(dataset_name: str, backbone_name: str, path_to_data_dir: str, path_to
                             num_workers=8, collate_fn=DatasetBase.padding_collate_fn, pin_memory=True)
 
     Log.i('Found {:d} samples'.format(len(dataset)))
-
+    NUM_OF_CLASSES = 3
     backbone = BackboneBase.from_name(backbone_name)(pretrained=True)
     model = nn.DataParallel(
         Model(
-            backbone, dataset.num_classes(), pooler_mode=Config.POOLER_MODE,
+            backbone, NUM_OF_CLASSES, pooler_mode=Config.POOLER_MODE,
             anchor_ratios=Config.ANCHOR_RATIOS, anchor_sizes=Config.ANCHOR_SIZES,
             rpn_pre_nms_top_n=Config.RPN_PRE_NMS_TOP_N, rpn_post_nms_top_n=Config.RPN_POST_NMS_TOP_N,
             anchor_smooth_l1_loss_beta=Config.ANCHOR_SMOOTH_L1_LOSS_BETA, proposal_smooth_l1_loss_beta=Config.PROPOSAL_SMOOTH_L1_LOSS_BETA
