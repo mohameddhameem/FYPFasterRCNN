@@ -65,7 +65,7 @@ def _infer_compare(path_to_input_image_1: str, path_to_input_image_2: str,
         dataset_class = DatasetBase.from_name(dataset_name)
         backbone = BackboneBase.from_name(backbone_name)(pretrained=False)
         #Modififed Code for custom inference
-        NUM_OF_CLASSES = 3 # Need to troubleshoot the bug. it should be 3 only
+        NUM_OF_CLASSES = 21 # Need to troubleshoot the bug. it should be 3 only
         model = Model(backbone, NUM_OF_CLASSES, pooler_mode=Config.POOLER_MODE,
                   anchor_ratios=Config.ANCHOR_RATIOS, anchor_sizes=Config.ANCHOR_SIZES,
                   rpn_pre_nms_top_n=Config.RPN_PRE_NMS_TOP_N, rpn_post_nms_top_n=Config.RPN_POST_NMS_TOP_N).cuda()
