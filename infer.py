@@ -55,8 +55,8 @@ def _infer(path_to_input_image: str, path_to_output_image: str, path_to_checkpoi
         image.save(path_to_output_image)
         print(f'Output image is saved to {path_to_output_image}')
 
-def _infer_compare(path_to_input_image_1: str, path_to_input_image_2: str,
-        path_to_output_image: str, path_to_checkpoint: str, dataset_name: str, backbone_name: str, prob_thresh: float):
+def _infer_compare(path_to_input_image_1: str, path_to_input_image_2: str, path_to_checkpoint: str,
+         dataset_name: str, backbone_name: str, prob_thresh: float):
         print('Start of Infer Compare method')
         #we will repeat the same steps as above _infer method, with below 2 Addition
         #1. Get the detection_classes & detection_probs for 2 different images and compare which images has highest Proabaility.
@@ -90,13 +90,13 @@ def _infer_compare(path_to_input_image_1: str, path_to_input_image_2: str,
 
             #for 2nd image
             image_2 = transforms.Image.open(path_to_input_image_2)
-            image_tensor_2, scale = dataset_class.preprocess(image_2, Config.IMAGE_MIN_SIDE, Config.IMAGE_MAX_SIDE)
+            image_tensor_2, scale2 = dataset_class.preprocess(image_2, Config.IMAGE_MIN_SIDE, Config.IMAGE_MAX_SIDE)
 
             detection_bboxes_2, detection_classes_2, detection_probs_2, _ = \
                 model.eval().forward(image_tensor_2.unsqueeze(dim=0).cuda())
-            detection_bboxes_2 /= scale
+            detection_bboxes_2 /= scale2
 
-            kept_indices_2 = detection_probs > prob_thresh
+            kept_indices_2 = detection_probs_2 > prob_thresh
             #detection_bboxes = detection_bboxes[kept_indices] We can ignore the bounding boxes for now
             detection_classes_2 = detection_classes_2[kept_indices_2]
             detection_probs_2 = detection_probs_2[kept_indices_2]
