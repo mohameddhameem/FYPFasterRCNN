@@ -5,12 +5,6 @@ Implemenation of [Faster R-CNN](https://arxiv.org/pdf/1506.01497.pdf) in PyTorch
 
 ## Demo
 
-![](images/image_crack_corrosion.jpg)
-With Crack Only
-![](images/image_crack.jpg)
-With Corrosion Only
-![](images/image_corrosion.jpg)
-
 1. Download checkpoint from [here](https://drive.google.com/open?id=1mQ9HV5nmGBM06mg1DjKWqBuKoipoBe5U)
 1. Follow the instructions in [Setup](#setup) 2 & 3
 1. Run inference script
