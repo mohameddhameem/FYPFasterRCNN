@@ -1,22 +1,22 @@
-#FROM python:3.6
+FROM python:3.6
 
-#WORKDIR /app
+WORKDIR /app
 
 # By copying over requirements first, we make sure that Docker will cache
 # our installed requirements rather than reinstall them on every build
-#COPY requirements.txt /app/requirements.txt
-#RUN pip install -r requirements.txt
-#RUN pip install pytorch-cpu torchvision-cpu -c pytorch
+COPY requirements.txt /app/requirements.txt
+RUN pip install -r requirements.txt
+RUN pip install pytorch-cpu torchvision-cpu -c pytorch
 
 # Now copy in our code, and run it
-#COPY . /app
+COPY . /app
 
-#RUN python support/setup.py develop
+RUN python support/setup.py develop
 #RUN python support/setup.py install
-#RUN python test/nms/test_nms.py
+RUN python test/nms/test_nms.py
 
 #CMD ["python", "./app/infer_websocket.py", "runserver", "0.0.0.0:8000"]
-#RUN python infer_websocket.py -s=voc2007 -b=resnet101 -c='/app/model-90000.pth'
+RUN python infer_websocket.py -s=voc2007 -b=resnet101 -c='/app/model-90000.pth'
 
 #FROM ubuntu:16.04
 #ENV CUDA_RUN https://developer.nvidia.com/compute/cuda/8.0/prod/local_installers/cuda_8.0.44_linux-run
@@ -47,33 +47,33 @@
 
 #WORKDIR /usr/local/cuda/samples/1_Utilities/deviceQuery
 
-FROM continuumio/miniconda3:4.6.14
+#FROM continuumio/miniconda3:4.6.14
 
 #RUN conda install -c conda-forge tensorboardx
 #RUN conda install -c conda-forge websockets
 #RUN conda install -c conda-forge opencv
 
-RUN conda install --yes \
+#RUN conda install --yes \
     #nomkl \
-    Pillow==6.1 \
+    #Pillow==6.1 \
     #numpy==1.18.0 \
     #opencv-python==3.4.8.29 \
-    protobuf \
-    six \
+    #protobuf \
+    #six \
     #tensorboardX==2.0 \
-    tqdm==4.19.9
+    #tqdm==4.19.9
     #websockets==8.1
 
 #RUN conda install pytorch-cpu torchvision-cpu -c pytorch
-RUN conda install pytorch-cpu
-WORKDIR /app
+#RUN conda install pytorch-cpu
+#WORKDIR /app
 
 # Now copy in our code, and run it
-COPY . /app
+#COPY . /app
 
-RUN python support/setup.py develop
+#RUN python support/setup.py develop
 #RUN python support/setup.py install
 #RUN python test/nms/test_nms.py
 
 #CMD ["python", "./app/infer_websocket.py", "runserver", "0.0.0.0:8000"]
-RUN python infer_websocket.py -s=voc2007 -b=resnet101 -c='/app/model-90000.pth'
+#RUN python infer_websocket.py -s=voc2007 -b=resnet101 -c='/app/model-90000.pth'
