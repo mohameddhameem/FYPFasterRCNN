@@ -264,3 +264,25 @@ Implemenation of [Faster R-CNN](https://arxiv.org/pdf/1506.01497.pdf) in PyTorch
 * Plot of beta smooth L1 loss function
 
     ![](images/beta-smooth-l1.png)
+    
+ #For Inference Setup (Windows PC - CPU only)
+1) Install Anaconda / Miniconda (64)bit
+2) create a new conda virtual environment with below command
+``
+conda create -n fypfasterrcnn python=3.6
+``
+3) activate the environment with command
+``
+conda activate fypfasterrcnn
+``
+4) Clone this repository to local folder
+5) Install pytorch CPU Version for windows with below command. (Assuming there is no cuda. there is cuda then follow pytroch website for installation)
+``
+conda install pytorch torchvision cpuonly -c pytorch
+``
+6) Run ``pip install -r requirements.txt`` from the command prompt.
+7) Run ``python support/setup.py develop``
+8) Run
+``
+python infer.py -s=voc2007 -b=resnet101 -c=model-90000.pth input.jpg output.jpg
+``
