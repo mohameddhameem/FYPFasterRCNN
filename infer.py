@@ -17,11 +17,11 @@ def _infer(path_to_input_image: str, path_to_output_image: str, path_to_checkpoi
     dataset_class = DatasetBase.from_name(dataset_name)
     backbone = BackboneBase.from_name(backbone_name)(pretrained=False)
     #Modififed Code for custom inference
-    NUM_OF_CLASSES = 3 # Need to troubleshoot the bug. it should be 3 only
+    NUM_OF_CLASSES = 21 # Need to troubleshoot the bug. it should be 3 only
     model = Model(backbone, NUM_OF_CLASSES, pooler_mode=Config.POOLER_MODE,
                   anchor_ratios=Config.ANCHOR_RATIOS, anchor_sizes=Config.ANCHOR_SIZES,
-                  rpn_pre_nms_top_n=Config.RPN_PRE_NMS_TOP_N, rpn_post_nms_top_n=Config.RPN_POST_NMS_TOP_N).cuda()
-    model.load(path_to_checkpoint)
+                  rpn_pre_nms_top_n=Config.RPN_PRE_NMS_TOP_N, rpn_post_nms_top_n=Config.RPN_POST_NMS_TOP_N)
+    model.load(path_to_checkpoint, )
     CATEGORY_TO_LABEL_DICT = {
         0: 'background',
         1: 'crack', 2: 'corrosion'
@@ -32,7 +32,7 @@ def _infer(path_to_input_image: str, path_to_output_image: str, path_to_checkpoi
         image_tensor, scale = dataset_class.preprocess(image, Config.IMAGE_MIN_SIDE, Config.IMAGE_MAX_SIDE)
 
         detection_bboxes, detection_classes, detection_probs, _ = \
-            model.eval().forward(image_tensor.unsqueeze(dim=0).cuda())
+            model.eval().forward(image_tensor.unsqueeze(dim=0))
         detection_bboxes /= scale
 
         kept_indices = detection_probs > prob_thresh
@@ -68,7 +68,7 @@ def _infer_compare(path_to_input_image_1: str, path_to_input_image_2: str, path_
         NUM_OF_CLASSES = 21 # Need to troubleshoot the bug. it should be 3 only
         model = Model(backbone, NUM_OF_CLASSES, pooler_mode=Config.POOLER_MODE,
                   anchor_ratios=Config.ANCHOR_RATIOS, anchor_sizes=Config.ANCHOR_SIZES,
-                  rpn_pre_nms_top_n=Config.RPN_PRE_NMS_TOP_N, rpn_post_nms_top_n=Config.RPN_POST_NMS_TOP_N).cuda()
+                  rpn_pre_nms_top_n=Config.RPN_PRE_NMS_TOP_N, rpn_post_nms_top_n=Config.RPN_POST_NMS_TOP_N)
         model.load(path_to_checkpoint)
         CATEGORY_TO_LABEL_DICT = {
             0: 'background',
@@ -80,7 +80,7 @@ def _infer_compare(path_to_input_image_1: str, path_to_input_image_2: str, path_
             image_tensor_1, scale = dataset_class.preprocess(image_1, Config.IMAGE_MIN_SIDE, Config.IMAGE_MAX_SIDE)
 
             detection_bboxes, detection_classes, detection_probs, _ = \
-                model.eval().forward(image_tensor_1.unsqueeze(dim=0).cuda())
+                model.eval().forward(image_tensor_1.unsqueeze(dim=0))
             detection_bboxes /= scale
 
             kept_indices = detection_probs > prob_thresh
@@ -93,7 +93,7 @@ def _infer_compare(path_to_input_image_1: str, path_to_input_image_2: str, path_
             image_tensor_2, scale2 = dataset_class.preprocess(image_2, Config.IMAGE_MIN_SIDE, Config.IMAGE_MAX_SIDE)
 
             detection_bboxes_2, detection_classes_2, detection_probs_2, _ = \
-                model.eval().forward(image_tensor_2.unsqueeze(dim=0).cuda())
+                model.eval().forward(image_tensor_2.unsqueeze(dim=0))
             detection_bboxes_2 /= scale2
 
             kept_indices_2 = detection_probs_2 > prob_thresh
