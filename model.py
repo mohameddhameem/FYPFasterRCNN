@@ -75,7 +75,13 @@ class Model(nn.Module):
         return path_to_checkpoint
 
     def load(self, path_to_checkpoint: str, optimizer: Optimizer = None, scheduler: _LRScheduler = None) -> 'Model':
-        checkpoint = torch.load(path_to_checkpoint)
+        ##Here we do the change for CPU or GPU
+        if torch.cuda.is_available():
+            map_location = lambda storage, loc: storage.cuda()
+        else:
+            map_location = 'cpu'
+        print('map_location ->', map_location)
+        checkpoint = torch.load(path_to_checkpoint, map_location=map_location)
         self.load_state_dict(checkpoint['state_dict'])
         step = checkpoint['step']
         if optimizer is not None:
