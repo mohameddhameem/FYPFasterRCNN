@@ -39,3 +39,13 @@ RUN TORCH_CUDA_ARCH_LIST="3.5 5.2 6.0 6.1 7.0+PTX" TORCH_NVCC_FLAGS="-Xfatbin -c
 
 WORKDIR /workspace
 RUN chmod -R a+w .
+
+### For custom code change TEST Only ####
+COPY requirements.txt /workspace/requirements.txt
+RUN pip install -r requirements.txt
+# Now copy in our code, and run it
+COPY . /workspace
+RUN python support/setup.py develop
+#This should give some result. if it complains CUDA / GPU is not available then its a problem
+RUN python test/nms/test_nms.py
+RUN python infer_websocket.py -s=voc2007 -b=resnet101 -c='/workspace/model-90000.pth'
