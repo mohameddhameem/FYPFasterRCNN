@@ -3,7 +3,7 @@ import os
 import random
 import torch
 
-from PIL import ImageDraw
+from PIL import ImageDraw, ImageFont
 from torchvision.transforms import transforms
 from dataset.base import Base as DatasetBase
 from backbone.base import Base as BackboneBase
@@ -17,7 +17,7 @@ def _infer(path_to_input_image: str, path_to_output_image: str, path_to_checkpoi
     dataset_class = DatasetBase.from_name(dataset_name)
     backbone = BackboneBase.from_name(backbone_name)(pretrained=False)
     #Modififed Code for custom inference
-    NUM_OF_CLASSES = 3
+    NUM_OF_CLASSES = 21
     model = Model(backbone, NUM_OF_CLASSES, pooler_mode=Config.POOLER_MODE,
                   anchor_ratios=Config.ANCHOR_RATIOS, anchor_sizes=Config.ANCHOR_SIZES,
                   rpn_pre_nms_top_n=Config.RPN_PRE_NMS_TOP_N, rpn_post_nms_top_n=Config.RPN_POST_NMS_TOP_N).cuda()
@@ -28,7 +28,7 @@ def _infer(path_to_input_image: str, path_to_output_image: str, path_to_checkpoi
     }
 
     with torch.no_grad():
-        image = transforms.Image.open(path_to_input_image)
+        image = transforms.Image.open(path_to_input_image).resize((640,480))
         image_tensor, scale = dataset_class.preprocess(image, Config.IMAGE_MIN_SIDE, Config.IMAGE_MAX_SIDE)
 
         detection_bboxes, detection_classes, detection_probs, _ = \
@@ -50,10 +50,66 @@ def _infer(path_to_input_image: str, path_to_output_image: str, path_to_checkpoi
             category = CATEGORY_TO_LABEL_DICT[cls]
 
             draw.rectangle(((bbox.left, bbox.top), (bbox.right, bbox.bottom)), outline=color)
-            draw.text((bbox.left, bbox.top), text=f'{category:s} {prob:.3f}', fill=color)
+            font = ImageFont.truetype("Roboto-Medium.ttf", 35)
+            draw.text((bbox.left, bbox.top), text=f'{category:s} {prob:.3f}', fill=color, font=font)
 
         image.save(path_to_output_image)
         print(f'Output image is saved to {path_to_output_image}')
+
+
+def infer_get_probs(path_to_input_image: str, path_to_checkpoint: str, dataset_name: str, backbone_name: str, prob_thresh: float):
+    print("1 predicting for {0}".format(path_to_input_image))
+    result = {}
+
+    dataset_class = DatasetBase.from_name(dataset_name)
+    backbone = BackboneBase.from_name(backbone_name)(pretrained=False)
+    #Modififed Code for custom inference
+    NUM_OF_CLASSES = 21
+    model = Model(backbone, NUM_OF_CLASSES, pooler_mode=Config.POOLER_MODE,
+                  anchor_ratios=Config.ANCHOR_RATIOS, anchor_sizes=Config.ANCHOR_SIZES,
+                  rpn_pre_nms_top_n=Config.RPN_PRE_NMS_TOP_N, rpn_post_nms_top_n=Config.RPN_POST_NMS_TOP_N).cuda()
+    model.load(path_to_checkpoint)
+    CATEGORY_TO_LABEL_DICT = {
+        0: 'background',
+        1: 'crack', 2: 'corrosion'
+    }
+
+    with torch.no_grad():
+        image = transforms.Image.open(path_to_input_image)
+        print("2 predicting for {0}".format(path_to_input_image))
+        image_tensor, scale = dataset_class.preprocess(image, Config.IMAGE_MIN_SIDE, Config.IMAGE_MAX_SIDE)
+
+        detection_bboxes, detection_classes, detection_probs, _ = \
+            model.eval().forward(image_tensor.unsqueeze(dim=0).cuda())
+        detection_bboxes /= scale
+
+        print("3 predicting for {0} detection prob: {1}".format(path_to_input_image, detection_probs))
+        kept_indices = detection_probs > prob_thresh
+        detection_bboxes = detection_bboxes[kept_indices]
+        detection_classes = detection_classes[kept_indices]
+        detection_probs = detection_probs[kept_indices]
+
+        draw = ImageDraw.Draw(image)
+
+        detection_count = 0
+        for bbox, cls, prob in zip(detection_bboxes.tolist(), detection_classes.tolist(), detection_probs.tolist()):
+            #color = random.choice(['red', 'green', 'blue', 'yellow', 'purple', 'white'])
+            #bbox = BBox(left=bbox[0], top=bbox[1], right=bbox[2], bottom=bbox[3])
+            #category = dataset_class.LABEL_TO_CATEGORY_DICT[cls]
+            #Updated for our usecase
+            category = CATEGORY_TO_LABEL_DICT[cls]
+
+            print("4 predicting for {0}".format(path_to_input_image))
+            #draw.rectangle(((bbox.left, bbox.top), (bbox.right, bbox.bottom)), outline=color)
+            #font = ImageFont.truetype("Roboto-Medium.ttf", 35)
+            #draw.text((bbox.left, bbox.top), text=f'{category:s} {prob:.3f}', fill=color, font=font)
+            print('detection: {0} cat: {1} prob: {2}'.format(detection_count, category, prob))
+            result[detection_count] = {category:prob}
+            print('detection: {0}'.format(result[detection_count]))
+            detection_count = detection_count + 1
+
+    print("END predicting for {0}".format(path_to_input_image))
+    return result
 
 
 if __name__ == '__main__':
