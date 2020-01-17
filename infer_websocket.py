@@ -18,10 +18,15 @@ from roi.pooler import Pooler
 def _infer_websocket(path_to_checkpoint: str, dataset_name: str, backbone_name: str, prob_thresh: float):
     dataset_class = DatasetBase.from_name(dataset_name)
     backbone = BackboneBase.from_name(backbone_name)(pretrained=False)
-    model = Model(backbone, dataset_class.num_classes(), pooler_mode=Config.POOLER_MODE,
+    NUM_OF_CLASSES = 3
+    model = Model(backbone, NUM_OF_CLASSES, pooler_mode=Config.POOLER_MODE,
                   anchor_ratios=Config.ANCHOR_RATIOS, anchor_sizes=Config.ANCHOR_SIZES,
                   rpn_pre_nms_top_n=Config.RPN_PRE_NMS_TOP_N, rpn_post_nms_top_n=Config.RPN_POST_NMS_TOP_N).cuda()
     model.load(path_to_checkpoint)
+    CATEGORY_TO_LABEL_DICT = {
+        0: 'background',
+        1: 'crack', 2: 'corrosion'
+    }
 
     async def handler(websocket, path):
         print('Connection established:', path)
@@ -47,7 +52,9 @@ def _infer_websocket(path_to_checkpoint: str, dataset_name: str, backbone_name: 
 
                 for bbox, cls, prob in zip(detection_bboxes.tolist(), detection_classes.tolist(), detection_probs.tolist()):
                     bbox = BBox(left=bbox[0], top=bbox[1], right=bbox[2], bottom=bbox[3])
-                    category = dataset_class.LABEL_TO_CATEGORY_DICT[cls]
+                    # category = dataset_class.LABEL_TO_CATEGORY_DICT[cls]
+                    # Updated for our usecase
+                    category = CATEGORY_TO_LABEL_DICT[cls]
 
                     message.append({
                         'left': int(bbox.left),
@@ -69,9 +76,9 @@ def _infer_websocket(path_to_checkpoint: str, dataset_name: str, backbone_name: 
 if __name__ == '__main__':
     def main():
         parser = argparse.ArgumentParser()
-        parser.add_argument('-s', '--dataset', type=str, choices=DatasetBase.OPTIONS, required=True, help='name of dataset')
-        parser.add_argument('-b', '--backbone', type=str, choices=BackboneBase.OPTIONS, required=True, help='name of backbone model')
-        parser.add_argument('-c', '--checkpoint', type=str, required=True, help='path to checkpoint')
+        parser.add_argument('-s', '--dataset', default='voc2007', type=str, choices=DatasetBase.OPTIONS, required=True, help='name of dataset')
+        parser.add_argument('-b', '--backbone', default='resnet101', type=str, choices=BackboneBase.OPTIONS, required=True, help='name of backbone model')
+        parser.add_argument('-c', '--checkpoint', default='model-90000.pth', type=str, required=True, help='path to checkpoint')
         parser.add_argument('-p', '--probability_threshold', type=float, default=0.6, help='threshold of detection probability')
         parser.add_argument('--image_min_side', type=float, help='default: {:g}'.format(Config.IMAGE_MIN_SIDE))
         parser.add_argument('--image_max_side', type=float, help='default: {:g}'.format(Config.IMAGE_MAX_SIDE))

@@ -23,6 +23,10 @@ def _infer_stream(path_to_input_stream_endpoint: str, period_of_inference: int, 
                   anchor_ratios=Config.ANCHOR_RATIOS, anchor_sizes=Config.ANCHOR_SIZES,
                   rpn_pre_nms_top_n=Config.RPN_PRE_NMS_TOP_N, rpn_post_nms_top_n=Config.RPN_POST_NMS_TOP_N).cuda()
     model.load(path_to_checkpoint)
+    CATEGORY_TO_LABEL_DICT = {
+        0: 'background',
+        1: 'crack', 2: 'corrosion'
+    }
 
     if path_to_input_stream_endpoint.isdigit():
         path_to_input_stream_endpoint = int(path_to_input_stream_endpoint)
@@ -51,11 +55,11 @@ def _infer_stream(path_to_input_stream_endpoint: str, period_of_inference: int, 
             detection_probs = detection_probs[kept_indices]
 
             draw = ImageDraw.Draw(image)
-
+            print(detection_classes, detection_probs)
             for bbox, cls, prob in zip(detection_bboxes.tolist(), detection_classes.tolist(), detection_probs.tolist()):
                 color = random.choice(['red', 'green', 'blue', 'yellow', 'purple', 'white'])
                 bbox = BBox(left=bbox[0], top=bbox[1], right=bbox[2], bottom=bbox[3])
-                category = dataset_class.LABEL_TO_CATEGORY_DICT[cls]
+                category = CATEGORY_TO_LABEL_DICT[cls]
 
                 draw.rectangle(((bbox.left, bbox.top), (bbox.right, bbox.bottom)), outline=color)
                 draw.text((bbox.left, bbox.top), text=f'{category:s} {prob:.3f}', fill=color)
