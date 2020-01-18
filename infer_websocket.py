@@ -18,10 +18,10 @@ from roi.pooler import Pooler
 def _infer_websocket(path_to_checkpoint: str, dataset_name: str, backbone_name: str, prob_thresh: float):
     dataset_class = DatasetBase.from_name(dataset_name)
     backbone = BackboneBase.from_name(backbone_name)(pretrained=False)
-    NUM_OF_CLASSES = 3
+    NUM_OF_CLASSES = 21
     model = Model(backbone, NUM_OF_CLASSES, pooler_mode=Config.POOLER_MODE,
                   anchor_ratios=Config.ANCHOR_RATIOS, anchor_sizes=Config.ANCHOR_SIZES,
-                  rpn_pre_nms_top_n=Config.RPN_PRE_NMS_TOP_N, rpn_post_nms_top_n=Config.RPN_POST_NMS_TOP_N).cuda()
+                  rpn_pre_nms_top_n=Config.RPN_PRE_NMS_TOP_N, rpn_post_nms_top_n=Config.RPN_POST_NMS_TOP_N)
     model.load(path_to_checkpoint)
     CATEGORY_TO_LABEL_DICT = {
         0: 'background',
@@ -40,7 +40,7 @@ def _infer_websocket(path_to_checkpoint: str, dataset_name: str, backbone_name: 
                 image_tensor, scale = dataset_class.preprocess(image, Config.IMAGE_MIN_SIDE, Config.IMAGE_MAX_SIDE)
 
                 detection_bboxes, detection_classes, detection_probs, _ = \
-                    model.eval().forward(image_tensor.unsqueeze(dim=0).cuda())
+                    model.eval().forward(image_tensor.unsqueeze(dim=0))
                 detection_bboxes /= scale
 
                 kept_indices = detection_probs > prob_thresh
@@ -67,7 +67,7 @@ def _infer_websocket(path_to_checkpoint: str, dataset_name: str, backbone_name: 
                 message = json.dumps(message)
                 await websocket.send(message)
 
-    server = websockets.serve(handler, host='*', port=8765, max_size=2 ** 32, compression=None)
+    server = websockets.serve(handler, host='0.0.0.0', port=8765, max_size=2 ** 32, compression=None)
     asyncio.get_event_loop().run_until_complete(server)
     print('Service is ready. Please navigate to http://127.0.0.1:8000/')
     asyncio.get_event_loop().run_forever()

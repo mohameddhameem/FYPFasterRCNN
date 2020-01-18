@@ -111,12 +111,14 @@ function onFrame() {
 
 function onResult(message) {
     let results = JSON.parse(message);
+    const fontScale = 2;
     for (let i in results) {
+        console.log(result.category)
         let result = results[i];
         let point1 = new cv.Point(result.left, result.top);
         let point2 = new cv.Point(result.right, result.bottom);
         cv.rectangle(rgbFrame, point1, point2, [0, 255, 0, 255]);
-        cv.putText(rgbFrame, result.category, point1, 1, 1, [0, 255, 0, 255]);
+        cv.putText(rgbFrame, result.category, point1, 1, 1, [0, 255, 0, 255], fontScale, { color: green, thickness: 2 });
     }
     cv.imshow(outputCanvas, rgbFrame);
 }
