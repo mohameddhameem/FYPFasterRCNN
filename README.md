@@ -265,7 +265,7 @@ Implemenation of [Faster R-CNN](https://arxiv.org/pdf/1506.01497.pdf) in PyTorch
 
     ![](images/beta-smooth-l1.png)
     
- #For Inference Setup (Windows PC - CPU only)
+# For Inference Setup (Windows PC - CPU only)
 1) Install Anaconda / Miniconda (64)bit
 2) create a new conda virtual environment with below command
 ``
